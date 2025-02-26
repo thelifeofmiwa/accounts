@@ -30,6 +30,13 @@
                             clearable
                             @input="updateAccount(account)"
                         />
+                        <div
+                            v-if="errors[account.id]?.label"
+                            class="error-message"
+                        >
+                            {{ errors[account.id].label }}
+                        </div>
+
                         <n-select
                             v-model:value="account.type"
                             :options="typeOptions"
@@ -45,6 +52,13 @@
                             clearable
                             @input="updateAccount(account)"
                         />
+                        <div
+                            v-if="errors[account.id]?.login"
+                            class="error-message"
+                        >
+                            {{ errors[account.id].login }}
+                        </div>
+
                         <n-input
                             v-if="account.type === 'Локальная'"
                             v-model:value="account.password"
@@ -55,6 +69,16 @@
                             size="small"
                             @input="updateAccount(account)"
                         />
+                        <div
+                            v-if="
+                                account.type === 'Локальная' &&
+                                errors[account.id]?.password
+                            "
+                            class="error-message"
+                        >
+                            {{ errors[account.id].password }}
+                        </div>
+
                         <n-button
                             type="error"
                             style="margin-top: 10px"
@@ -76,6 +100,8 @@ import { useAccountStore } from "@/stores/accounts";
 
 const store = useAccountStore();
 const accounts = ref(store.accounts);
+const errors = ref<Record<number, any>>({});
+
 const typeOptions = [
     { label: "LDAP", value: "LDAP" },
     { label: "Локальная", value: "Локальная" },
@@ -91,19 +117,45 @@ const addNewAccount = () => {
     };
     store.addAccount(newAccount);
     accounts.value = store.accounts;
+    errors.value[newAccount.id] = {};
+};
+
+const validateAccount = (account: any) => {
+    const errorMessages: any = {};
+
+    if (!account.login || account.login.trim() === "") {
+        errorMessages.login = "Логин не может быть пустым";
+    }
+
+    if (account.type === "Локальная" && !account.password) {
+        errorMessages.password =
+            "Пароль обязателен для локальных учётных записей";
+    }
+
+    return errorMessages;
 };
 
 const updateAccount = (account: any) => {
-    if (account.type === "LDAP") {
-        account.password = null;
+    const errorsForAccount = validateAccount(account);
+    if (Object.keys(errorsForAccount).length > 0) {
+        errors.value = { ...errors.value, [account.id]: errorsForAccount };
+    } else {
+        delete errors.value[account.id];
     }
 
-    store.updateAccount(account);
+    if (Object.keys(errorsForAccount).length === 0) {
+        if (account.type === "LDAP") {
+            account.password = null;
+        }
+
+        store.updateAccount(account);
+    }
 };
 
 const removeAccount = (id: number) => {
     store.removeAccount(id);
     accounts.value = store.accounts;
+    delete errors.value[id];
 };
 </script>
 
@@ -137,7 +189,7 @@ const removeAccount = (id: number) => {
     display: flex;
     flex-wrap: wrap;
     gap: 15px;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: 100%;
     margin-top: 20px;
 }
@@ -145,6 +197,7 @@ const removeAccount = (id: number) => {
 .account-item {
     width: 400px;
     height: 250px;
+    margin-bottom: 15px;
 }
 
 .account-card {
@@ -201,5 +254,11 @@ const removeAccount = (id: number) => {
 
 .account-card .delete-btn:hover {
     color: #d43f3a;
+}
+
+.error-message {
+    color: #ff4d4f;
+    font-size: 12px;
+    margin-top: 5px;
 }
 </style>
