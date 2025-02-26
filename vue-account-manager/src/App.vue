@@ -1,7 +1,6 @@
 // src/App.vue
 <template>
   <n-space vertical>
-    <AccountForm />
     <AccountList />
   </n-space>
 </template>
