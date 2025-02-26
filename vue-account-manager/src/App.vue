@@ -6,6 +6,13 @@
 </template>
 
 <script setup lang="ts">
-import AccountForm from '@/components/AccountForm.vue';
 import AccountList from '@/components/AccountList.vue';
 </script>
+
+<style>
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box
+}
+</style>
