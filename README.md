@@ -23,7 +23,7 @@
 ### 1. Клонируйте репозиторий
 
 ```bash
-git clone <ссылка на репозиторий>
+git clone <https://github.com/thelifeofmiwa/accounts.git>
 cd <папка с проектом>
 ```
 ### 2. Установите зависимости
